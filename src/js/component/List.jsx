@@ -1,17 +1,12 @@
 import React, { useEffect, useState } from "react";
 //include images into your bundle
-
 //create your first component
 const List = () => {
 	const [inputValue, setInputValue] = useState("");
 	const [inputList, setInputList] = useState(["Niessa", "Sandy", "Liela"]);
 
-	const delItem = index => {
-		setInputList(inputList.filter((result, i) => index != i));
-	};
-
 	useEffect(() => {
-		fetch("https://assets.breatheco.de/apis/fake/todos/user/santaMaria")
+		fetch("https://assets.breatheco.de/apis/fake/todos/user/13")
 			.then(response => {
 				if (!response.ok) {
 					throw new Error(response.statusText);
@@ -19,15 +14,49 @@ const List = () => {
 				return response.json();
 			})
 			.then(data => setInputList(data));
-	}, []); //empty array means it will only run once
+	}, []);
 
 	function addItem(e) {
 		if (e.keyCode == 13) {
 			setInputValue(inputValue);
 			const list = inputList.concat(inputValue);
 			setInputList(list);
+
+			fetch("https://assets.breatheco.de/apis/fake/todos/user/13", {
+				method: "PUT",
+				body: JSON.stringify(list),
+				headers: {
+					"Content-Type": "application/json"
+				}
+			}).then(response => {
+				if (response.ok) {
+					fetch("https://assets.breatheco.de/apis/fake/todos/user/13")
+						.then(response => {
+							if (!response.ok) {
+								throw new Error(response.statusText);
+							}
+							return response.json();
+						})
+						.then(data => setInputList(data))
+						.catch(error => console.error(error));
+				}
+			});
 		}
 	}
+
+	const delItem = index => {
+		let newList = setInputList(inputList.filter((result, i) => index != i));
+
+		fetch("https://assets.breatheco.de/apis/fake/todos/user/13", {
+			method: "PUT",
+			body: JSON.stringify(newList),
+			headers: {
+				"Content-Type": "application/json"
+			}
+		})
+			.then(response => console.log(response))
+			.catch(error => console.error(error));
+	};
 
 	return (
 		<div className="text-center mt-5">
@@ -57,5 +86,4 @@ const List = () => {
 		</div>
 	);
 };
-
 export default List;
